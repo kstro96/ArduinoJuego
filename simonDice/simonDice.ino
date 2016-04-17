@@ -43,21 +43,33 @@ void setup() {
   pinMode(pinAmarilloResp, OUTPUT); //Amarillo Respuesta
   pinMode(pinVerdeResp, OUTPUT); //Verde Respuesta
 
-
+  //Los pulsadores deben estar conectados para generar un LOW (cero) Constante
   pinMode(pulsadorRojo, INPUT);//Pulsador Rojo
   pinMode(pulsadorAmarillo, INPUT);//Pulsador Amarillo
   pinMode(pulsadorVerde, INPUT);//Pulsador Verde
 
-  pinMode(InferiorHorizontal, OUTPUT);
-  pinMode(DerInferiorVertical, OUTPUT);
-  pinMode(IzqInferiorVertical, OUTPUT);
-  pinMode(Punto, OUTPUT);
-  pinMode(DerSuperiorVertical, OUTPUT);
-  pinMode(SuperiorHorizontal, OUTPUT);
-  pinMode(IzqSuperiorVertical, OUTPUT);
-  pinMode(MedioHorizontal, OUTPUT);
+  /*
+    El 7 Segmentos utilizado es de ANODO COMUN
+    Si el que es usado es de Catodo comun cambiar HIGH por LOW(En funciones inferiores de impresion de numeros)
+    y hacer el cambio en las conexiones necesarias
+  */
+  pinMode(InferiorHorizontal, OUTPUT);//Pin de la Linea INFERIOR HORIZONTAL
+  pinMode(DerInferiorVertical, OUTPUT);//Pin de la Linea DERECHA INFERIOR VERTICAL
+  pinMode(IzqInferiorVertical, OUTPUT);//Pin de la Linea IZQUIERDA INFERIOR VERTICAL
+  pinMode(Punto, OUTPUT);//Pin del PUNTO
+  pinMode(DerSuperiorVertical, OUTPUT);//Pin de la Linea DERECHA SUPERIOR VERTICAL
+  pinMode(SuperiorHorizontal, OUTPUT);//Pin de la Linea SUPERIOR HORIZONTAL
+  pinMode(IzqSuperiorVertical, OUTPUT);//Pin de la Linea IZQUIERDA SUPERIOR VERTICAL
+  pinMode(MedioHorizontal, OUTPUT);//Pin de la Linea MEDIO HORIZONTAL
 }
 
+/*
+   Seccion de codigo que genera la secuencia de leds en forma pseudoAleatoria utilizando
+   como semilla de la funcion Random la funcion millis que da el tiempo que se ha demorado ejecutando
+   el programa.
+   Se establece unos rango para que sea mas aleatoria la seleccion de cual led se encendera.
+   Si se desea cambiar los rangos de los diferente pines, se tienen que cambiar en la funcion EjecucionUsuario y en la funcion ValidarRespuestas
+*/
 void SeccionAleatorio() {
   for (int i = 0; i < 3; i++)
   {
@@ -68,19 +80,19 @@ void SeccionAleatorio() {
     randomSeed(millis());
     int aleatorio = random(0, 60);
     orden[i] = aleatorio;
-    if (aleatorio >= 0 && aleatorio < 20)//Condicion para encender el led verde PIN 11
+    if (aleatorio >= 0 && aleatorio < 20)//Condicion para encender el led verde pinVerdeAleatorio
     {
       digitalWrite(pinVerdeAleatorio, HIGH);
       delay(500);
       digitalWrite(pinVerdeAleatorio, LOW);
     }
-    if (aleatorio >= 20 && aleatorio < 40)//Condicion para encender el led amarillo PIN 12
+    if (aleatorio >= 20 && aleatorio < 40)//Condicion para encender el led amarillo pinAmarilloAleatorio
     {
       digitalWrite(pinAmarilloAleatorio, HIGH);
       delay(500);
       digitalWrite(pinAmarilloAleatorio, LOW);
     }
-    if (aleatorio >= 40 && aleatorio <= 60)//Condicion para encender el led ROJO PIN 13
+    if (aleatorio >= 40 && aleatorio <= 60)//Condicion para encender el led ROJO pinRojoAleatorio
     {
       digitalWrite(pinRojoAleatorio, HIGH);
       delay(500);
@@ -94,6 +106,9 @@ void SeccionAleatorio() {
   espera = true;
 }
 
+/*
+   Seccion de espera entre la generacion de la secuencia aleatoria y la seleccion del usuario
+*/
 void Espera() {
   for (int i = 10 ; i >= 0 ; i--)
   {
@@ -110,6 +125,12 @@ void Espera() {
   ejecucionUsuario = true;
 }
 
+/*
+   Seccion en la cual el usuario selecciona un led de respuesta
+   Cuando se llama a la funcion se realiza un ciclo para llamarla las veces que sea necesaria
+   El retorno de esta funcion tiene que ver con los rangos especificados en la funcion SeccionAleatorio
+   (Tener en cuenta que si se desea cambiar los rangos en la funcion SeccionAleatorio hay que cambiarlos aqui tambien)
+*/
 int EjecucionUsuario(int pin)
 {
   int lecturaRojo = 0;
@@ -130,7 +151,7 @@ int EjecucionUsuario(int pin)
       delay(300);
       digitalWrite(pinRojoResp, LOW);
       delay(100);
-      return 50;
+      return 50;//Numero dentro del rango aleatorio para el led RojoAleatorio
     }
     if (lecturaAmarillo == HIGH)
     {
@@ -138,7 +159,7 @@ int EjecucionUsuario(int pin)
       delay(300);
       digitalWrite(pinAmarilloResp, LOW);
       delay(100);
-      return 30;
+      return 30;//Numero dentro del rango aleatorio para el led AmarilloAleatorio
     }
     if (lecturaVerde == HIGH)
     {
@@ -146,12 +167,18 @@ int EjecucionUsuario(int pin)
       delay(300);
       digitalWrite(pinVerdeResp, LOW);
       delay(100);
-      return 10;
+      return 10;//Numero dentro del rango aleatorio para el led VerdeAleatorio
     }
   }
-  while (true);
+  while (true);//Se realiza una espera hasta que el ususario oprima alguno de los pulsadores
 }
 
+/*
+   Funcion que valida si las respuestas realizadas por el usuario son iguales a las que son generadas aleatoriamente
+   Tener en cuenta que en esta funcion tambien se tienen en cuenta los rangos de la funcion SeccionAleatorio,
+   Si se desean cambiar los rangos en esa funcion tambien debe realizarse en esta
+   Retorna true si todas las respuestas son correctas y si al menos una es incorrecta se retorna false
+*/
 bool validarRespuestas()
 {
   bool correcto;
@@ -170,8 +197,9 @@ bool validarRespuestas()
   return true;
 }
 /*
-   El 7 Segmentos utilizado es de ANODO COMUN
-   Si el que es usado es de Catodo comun cambiar HIGH por LOW(En la implementacion de las funciones abajo) y hacer el cambio en las conexiones necesarias
+   *En esta funcion se llama a la funcion de imprimir el numero dependiendo de la variable victorias.
+   *El 7 Segmentos utilizado es de ANODO COMUN
+   *Si el que es usado es de Catodo comun cambiar HIGH por LOW(En la implementacion de las funciones abajo) y hacer el cambio en las conexiones necesarias
 */
 void ImprimirVictorias()
 {
@@ -230,6 +258,10 @@ void ImprimirVictorias()
 
   }
 }
+
+/*
+ * Funcion principal loop de cualquier programa en Arduino.
+ */
 void loop() {
   if (seccionAleatorio)
   {
