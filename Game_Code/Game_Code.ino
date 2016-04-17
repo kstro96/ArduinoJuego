@@ -1,7 +1,8 @@
+int secuencia = 3; //Cuantos elementos por secuencia hay
 int orden[3]; //Orden de los numeros generados aleatorios
 int respuestas[3]; //Orden de los numeros presionados por el usuario
 bool inicio = true; //Indica que se ejecuta espera para iniciar un nuevo juego
-bool seccionAleatorio = true; //Indica que se debe ejecutar la parte de generar los numeros aleatorios
+bool seccionAleatorio = false; //Indica que se debe ejecutar la parte de generar los numeros aleatorios
 bool espera = false; //Indica que se debe ejecutar la seccion de espera
 bool ejecucionUsuario = false; //Indica que se debe ejecutar la parte del usuario
 bool validacionRespuestas = false;//Indica que se debe ejecutar la seccion para verificar si las respuestas fueron correctas
@@ -19,6 +20,11 @@ int pulsadorRojo = 7;//Pin para el pulsador para que usuario elija el led ROJO
 int pulsadorAmarillo = 6;//Pin para el pulsador para que usuario elija el led AMARILLO
 int pulsadorVerde = 5;//Pin para el pulsador para que usuario elija el led VERDE
 
+int pulsadorInicio = 4; // Pin para el pulsador de inicio del programa
+
+int esperaPin = 3; //Pin para un led que significa que espera por respuesta del usuario
+int correcto = 31;//Indica el pin para un led verde que significa que se realizo la secuencia correctamente
+int incorrecto = 33;//Indica el pin para un led rojo que significa que se realizo la secuencia incorrectamente
 /*
    El 7 Segmentos utilizado es de ANODO COMUN
    Si el que es usado es de Catodo comun cambiar HIGH por LOW(En funciones inferiores de impresion de numeros)
@@ -48,6 +54,11 @@ void setup() {
   pinMode(pulsadorAmarillo, INPUT);//Pulsador Amarillo
   pinMode(pulsadorVerde, INPUT);//Pulsador Verde
 
+  pinMode(pulsadorInicio, INPUT);//pulsador de inicio del programa
+
+  pinMode(correcto, OUTPUT);//Indica el pin para un led verde que significa que se realizo la secuencia correctamente
+  pinMode(incorrecto, OUTPUT);//Indica el pin para un led rojo que significa que se realizo la secuencia incorrectamente
+  pinMode(esperaPin, OUTPUT); //Pin para un led que significa que espera por respuesta del usuario
   /*
     El 7 Segmentos utilizado es de ANODO COMUN
     Si el que es usado es de Catodo comun cambiar HIGH por LOW(En funciones inferiores de impresion de numeros)
@@ -64,6 +75,50 @@ void setup() {
 }
 
 /*
+   Funcion que espera a que el usuario presione el pulsador de inicio
+*/
+void EsperaInicio()
+{
+  int lectura;
+  digitalWrite(esperaPin, HIGH);
+  do {
+    digitalWrite(pinRojoAleatorio, HIGH);
+    digitalWrite(pinAmarilloAleatorio, HIGH);
+    digitalWrite(pinVerdeAleatorio, HIGH);
+    digitalWrite(pinRojoResp, HIGH);
+    digitalWrite(pinAmarilloResp, HIGH);
+    digitalWrite(pinVerdeResp, HIGH);
+    digitalWrite(InferiorHorizontal, HIGH);
+    digitalWrite(SuperiorHorizontal, HIGH);
+    digitalWrite(MedioHorizontal, HIGH);
+    digitalWrite(Punto, HIGH);
+    digitalWrite(DerInferiorVertical, HIGH);
+    digitalWrite(IzqInferiorVertical, HIGH);
+    digitalWrite(DerSuperiorVertical, HIGH);
+    digitalWrite(IzqSuperiorVertical, HIGH);
+    delay(100);
+    digitalWrite(pinRojoAleatorio, LOW);
+    digitalWrite(pinAmarilloAleatorio, LOW);
+    digitalWrite(pinVerdeAleatorio, LOW);
+    digitalWrite(pinRojoResp, LOW);
+    digitalWrite(pinAmarilloResp, LOW);
+    digitalWrite(pinVerdeResp, LOW);
+    digitalWrite(InferiorHorizontal, LOW);
+    digitalWrite(SuperiorHorizontal, LOW);
+    digitalWrite(MedioHorizontal, LOW);
+    digitalWrite(Punto, LOW);
+    digitalWrite(DerInferiorVertical, LOW);
+    digitalWrite(IzqInferiorVertical, LOW);
+    digitalWrite(DerSuperiorVertical, LOW);
+    digitalWrite(IzqSuperiorVertical, LOW);
+    delay(100);
+    lectura = digitalRead(pulsadorInicio);
+  } while (lectura == LOW);
+  inicio = false;
+  seccionAleatorio = true;
+  digitalWrite(esperaPin, LOW);
+}
+/*
    Seccion de codigo que genera la secuencia de leds en forma pseudoAleatoria utilizando
    como semilla de la funcion Random la funcion millis que da el tiempo que se ha demorado ejecutando
    el programa.
@@ -71,7 +126,7 @@ void setup() {
    Si se desea cambiar los rangos de los diferente pines, se tienen que cambiar en la funcion EjecucionUsuario y en la funcion ValidarRespuestas
 */
 void SeccionAleatorio() {
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < secuencia; i++)
   {
     digitalWrite(pinVerdeAleatorio, LOW);
     digitalWrite(pinAmarilloAleatorio, LOW);
@@ -182,7 +237,7 @@ int EjecucionUsuario(int pin)
 bool validarRespuestas()
 {
   bool correcto;
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < secuencia; i++)
   {
     correcto = false;
     if (orden[i] >= 0 && orden[i] < 20 && respuestas[i] >= 0 && respuestas[i] < 20)
@@ -197,9 +252,9 @@ bool validarRespuestas()
   return true;
 }
 /*
-   *En esta funcion se llama a la funcion de imprimir el numero dependiendo de la variable victorias.
-   *El 7 Segmentos utilizado es de ANODO COMUN
-   *Si el que es usado es de Catodo comun cambiar HIGH por LOW(En la implementacion de las funciones abajo) y hacer el cambio en las conexiones necesarias
+    En esta funcion se llama a la funcion de imprimir el numero dependiendo de la variable victorias.
+    El 7 Segmentos utilizado es de ANODO COMUN
+    Si el que es usado es de Catodo comun cambiar HIGH por LOW(En la implementacion de las funciones abajo) y hacer el cambio en las conexiones necesarias
 */
 void ImprimirVictorias()
 {
@@ -260,9 +315,12 @@ void ImprimirVictorias()
 }
 
 /*
- * Funcion principal loop de cualquier programa en Arduino.
- */
+   Funcion principal loop de cualquier programa en Arduino.
+*/
 void loop() {
+  if (inicio) {
+    EsperaInicio();
+  }
   if (seccionAleatorio)
   {
     ImprimirVictorias();
@@ -274,8 +332,8 @@ void loop() {
   }
   if (ejecucionUsuario)
   {
-    for (int i = pinVerdeAleatorio, j = 0 ; i <= pinRojoAleatorio ; i++, j++) {
-      respuestas[j] = EjecucionUsuario(i);
+    for (int i = 0; i < secuencia ; i++) {
+      respuestas[i] = EjecucionUsuario(esperaPin);
     }
     ejecucionUsuario = false;
     validacionRespuestas = true;
@@ -286,19 +344,9 @@ void loop() {
     {
       for (int i = 10; i > 0; i--)
       {
-        digitalWrite(pinVerdeResp, HIGH);
-        digitalWrite(pinAmarilloResp, HIGH);
-        digitalWrite(pinRojoResp, HIGH);
-        digitalWrite(pinVerdeAleatorio, HIGH);
-        digitalWrite(pinAmarilloAleatorio, HIGH);
-        digitalWrite(pinRojoAleatorio, HIGH);
+        digitalWrite(correcto, HIGH);
         delay(300);
-        digitalWrite(pinVerdeResp, LOW);
-        digitalWrite(pinAmarilloResp, LOW);
-        digitalWrite(pinRojoResp, LOW);
-        digitalWrite(pinVerdeAleatorio, LOW);
-        digitalWrite(pinAmarilloAleatorio, LOW);
-        digitalWrite(pinRojoAleatorio, LOW);
+        digitalWrite(correcto, LOW);
         delay(200);
       }
       victorias++;
@@ -310,20 +358,13 @@ void loop() {
     }
     else
     {
-      digitalWrite(pinVerdeResp, HIGH);
-      digitalWrite(pinAmarilloResp, HIGH);
-      digitalWrite(pinRojoResp, HIGH);
-      digitalWrite(pinVerdeAleatorio, HIGH);
-      digitalWrite(pinAmarilloAleatorio, HIGH);
-      digitalWrite(pinRojoAleatorio, HIGH);
-      delay(1000);
-      digitalWrite(pinVerdeResp, LOW);
-      digitalWrite(pinAmarilloResp, LOW);
-      digitalWrite(pinRojoResp, LOW);
-      digitalWrite(pinVerdeAleatorio, LOW);
-      digitalWrite(pinAmarilloAleatorio, LOW);
-      digitalWrite(pinRojoAleatorio, LOW);
-      delay(500);
+      for (int i = 10 ; i > 0 ; i--)
+      {
+        digitalWrite(incorrecto, HIGH);
+        delay(300);
+        digitalWrite(incorrecto, LOW);
+        delay(200);
+      }
     }
     validacionRespuestas = false;
     seccionAleatorio = true;
