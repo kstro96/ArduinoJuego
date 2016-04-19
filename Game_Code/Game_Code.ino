@@ -1,4 +1,27 @@
-int secuencia = 3; //Cuantos elementos por secuencia hay
+/*
+ * @Version: 1.8
+ * @Author: Alejandro Castro Martinez 
+ *          Bogota D.C - Colombia 
+ *          Pontificia Universidad Javeriana
+ * @Email: alejandro.castro2016@outlook.es
+ *          
+ * Codigo para un juego controlado por Arduino en el cual se genera una secuencia aleatoria de encendido y apagado de 3 leds 
+ * la cual debe ser replicada por el usuario usando pulsadores designados para cada uno de los leds (En este caso se realizo para solo 3 Rojo, Amarillo y Verde)
+ * Tambien consta de un 7 segmentos para contar la cantidad de victorias del usuario.
+ * 
+ * Elementos necesarios: 
+ *    -> 9 Leds 
+ *       * 3 Verdes
+ *       * 3 Amarillos
+ *       * 3 Rojos
+ *   -> Resistencias para cada uno de los Led 
+ *   -> 4 Pulsadores (Conectados en 0 constante)
+ *   -> Resistencias para un divisor de voltaje para cada pulsador 
+ *   -> 7 Segmentos (En este codigo se hace uso de un 7 segmentos de Anodo Comun) 
+ *   -> Jumpers: Conexion entre el Arduino y la protoboard 
+ * => Las conexiones respectivas se encuentran en el archivo adjunto (Imagen o archivo Fritzing)
+ *    Lo que se encuentra organizado es el archivo breadboard. El esquematico tambien se puede encontrar pero desorganizado 
+ */
 int orden[3]; //Orden de los numeros generados aleatorios
 int respuestas[3]; //Orden de los numeros presionados por el usuario
 bool inicio = true; //Indica que se ejecuta espera para iniciar un nuevo juego
@@ -11,7 +34,7 @@ int victorias = 0; //Indica la cantidad de victorias del usuario
 int pinRojoAleatorio = 13;//Pin para led Rojo donde se muestran los valores aleatorios
 int pinAmarilloAleatorio = 12;//Pin para led Amarillo donde se muestran los valores aleatorios
 int pinVerdeAleatorio = 11;//Pin para led Verde donde se muestran los valores aleatorios
-//Los pines aleatorios deben ser consecutivos empezando con el VERDE como el menor y el ROJO con el mayor
+
 int pinRojoResp = 10;//Pin para led Rojo donde se ingresan las respuestas
 int pinAmarilloResp = 9;//Pin para led Amarillo donde se ingresan las respuestas
 int pinVerdeResp = 8;//Pin para led Verde donde se ingresan las respuestas
